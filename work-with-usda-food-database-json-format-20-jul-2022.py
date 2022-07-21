@@ -1,6 +1,7 @@
 """
-created on 18-jul-2022
-@author : leowkimteck@gmail.com
+created : 18-jul-2022
+author : Button Leow
+contact: leowkimteck@gmail.com
 
 """
 
@@ -11,6 +12,9 @@ import matplotlib.pyplot as plt
 import earthpy as et
 import json
 
+# The US Department of Agriculture (USDA) published database of food and nutrient information.
+# A version of this USDA Food Database in JSON format was made available by Ashley Williams.
+
 #open json data as pandas data frame
 pd.set_option('display.max_rows', None)  # or to display 1000 rows
 url = "https://raw.githubusercontent.com/wesm/pydata-book/2nd-edition/datasets/usda_food/database.json"
@@ -18,8 +22,8 @@ url = url.replace(" ", "%20")
 usda_food_db = pd.read_json(url)
 usda_food_db
 
-type(usda_food_db)
-len(usda_food_db)
+type(usda_food_db) ## <class 'pandas.core.frame.DataFrame'>
+len(usda_food_db) ## ## 6636 
 usda_food_db.head()
 
 
@@ -28,7 +32,6 @@ usda_food_db_foodgroup = usda_food_db[["id", "group"]]
 
 #open json data as list of dictionaries
 import urllib, json
-
 url = "https://raw.githubusercontent.com/wesm/pydata-book/2nd-edition/datasets/usda_food/database.json"
 response = urllib.request.urlopen(url)
 usda_food_database = json.loads(response.read())
@@ -71,7 +74,8 @@ usda_food_database[0]["tags"]
 usda_food_database[0]["manufacturer"]
 
 
-#view Nutrient data for food item no.1-'Cheese, caraway' in SR Legacy
+#view Nutrient data for food item no.1-'Cheese, caraway' in Standard Reference Legacy (SR Legacy)
+#SR Legacy : one of the distinct data type published by USDA
 
 pd.set_option('display.max_rows', None)  # or 1000
 nutrients = pd.DataFrame(usda_food_database[0]['nutrients'])
@@ -88,26 +92,26 @@ nutrients_foodid_6635 = pd.DataFrame(usda_food_database[6635]['nutrients'])
 nutrients_foodid_6635
 
 #convert a list of dicts to a DataFrame, by specify a list of fields to extract.
-#take the food names (description), group, id, and manufacturer
+#use the food names (description), group, id, and manufacturer
 info_keys = ['id', 'description', 'group', 'manufacturer']
 info = pd.DataFrame(usda_food_database, columns=info_keys)
 info.info()
 
-#see the distribution of food groups with value_counts
+#view the distribution of food groups with value_counts
 pd.value_counts(info.group)
 
 #view the length (quantity) of food groups with value_counts
 len(pd.value_counts(info.group)) ## 25
 type(pd.value_counts(info.group)) ## pandas.core.series.Series
 
-#see the distribution of food manufacturer with value_counts
+#view the distribution of food manufacturer with value_counts
 pd.value_counts(info.manufacturer)
 
 #view the length (quantity) of manufacturer with value_counts
 len(pd.value_counts(info.manufacturer)) ## 67
 
 
-#To do analysis on all of the nutrient data, assemble the nutrients for each food into a single large table.
+#To analysis the nutrient data, assemble the nutrients for each food into a single large table.
 #First, convert each list of food nutrients to a DataFrame, add a column for the food id, 
 #and append the DataFrame to a list. Then, these can be concatenated together with concat
 
@@ -137,7 +141,7 @@ nutrients.info() ## 389355 rows × 5 columns
 #drop duplicates in the nutrients DataFrame
 nutrients.duplicated().sum() ## number of duplicates ## 14179
 
-#remove duplicates
+#remove duplicates in the nutrients DataFrame
 nutrients = nutrients.drop_duplicates()
 nutrients.info() ## 375176 rows × 5 columns
 
@@ -197,7 +201,7 @@ food_zinc_desc = food_zinc.sort_values(by="value", ascending=False)
 pd.set_option('display.max_rows', None)  #to display up to 1000 rows
 top25_food_zinc = food_zinc_desc.head(25)
 
-#For all the different foods groups (beef Products, Pork Products, dairy and egg products etc.), calculate the median Zinc content (median of the zinc content in all the foods that constitute the nutrient group)
+#For all the different foods groups (Finfish and Shellfish Products, Pork Products, Lamb, Veal, and Game Products etc.), calculate the median Zinc content (median of the zinc content in all of the foods that constitute the food group)
 #Plot the distribution of median Zinc Content for different foods groups as a bar chart.
 
 result = nutrient_data.groupby(['nutrient', 'food_group'])['value'].quantile(0.5)
@@ -220,7 +224,6 @@ result['Total lipid (fat)'].plot(kind='barh', title = "Distribution of Median To
 plt.xlabel("Total lipid Content, g/100 g")
 plt.show()
 
-
 #Plot the distribution of median Carbohydrate Content for different foods groups as a bar chart.
 result = nutrient_data.groupby(['nutrient', 'food_group'])['value'].quantile(0.5)
 plt.figure(figsize=[16,10])
@@ -229,7 +232,7 @@ plt.xlabel("Carbohydrate Content, g/100 g")
 plt.show()
 
 """
-For a nutrient group (‘Amino Acids, etc’), create a table to show the different constituents of the group (Alanine, Glycine, Histidine, etc) and the foods in which they are present (Gelatins, dry powder, beluga, meat, etc)
+For a nutrient group (‘Composition, etc’), create a table to show the different constituents of the group (protein, carbohydrates, fibre, etc) and the foods in which they are present (soy protein isolate, sweeteners, corn bran,etc)
 
 """
 by_nutrient = nutrient_data.groupby(['nutgroup', 'nutrient'])
@@ -238,16 +241,14 @@ get_minimum = lambda x: x.loc[x.value.idxmin()]
 max_foods = by_nutrient.apply(get_maximum)[['value', 'food']]
 max_foods
 max_foods.info() ## 94 x 2 columns
-
 type(max_foods) ## pandas.core.frame.DataFrame
 
 #make the max_foods data smaller
 max_foods.food = max_foods.food.str[:50]
 max_foods.food
-
 type(max_foods.food) ## pandas.core.series.Series
 
-#tabel of Amino Acid  
+#table of Amino Acid  
 max_foods.loc['Amino Acids']
 
 #table of Vitamins
